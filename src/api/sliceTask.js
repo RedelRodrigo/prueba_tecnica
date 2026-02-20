@@ -1,8 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// Este archivo ya no se utiliza.
+// El gestor de tareas ahora usa localStorage a través del hook useLocalStorageTasks.
+// Ver: src/hooks/useLocalStorageTasks.js
 
-export const tasksApi = createApi({
-  reducerPath: "tasksApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/" }),
   tagTypes: ["Tasks"],
   endpoints: (builder) => ({
     getTasks: builder.query({

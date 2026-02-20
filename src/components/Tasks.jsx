@@ -1,24 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CrudForm } from "./CrudForm";
-import { useGetTasksQuery, useDeleteTaskMutation } from "../api/sliceTask";
+import { useLocalStorageTasks } from "../hooks/useLocalStorageTasks";
 
 export const Tasks = () => {
-  const { data: tasks, isLoading, error } = useGetTasksQuery();
-  const [deleteTask, { isLoading: isDeleting }] = useDeleteTaskMutation();
+  const { tasks, addTask, updateTask, deleteTask } = useLocalStorageTasks();
   const [taskToEdit, setTaskToEdit] = useState(null);
 
-  const handleDelete = async (id) => {
-    try {
-      console.log("Eliminando tarea con ID:", id, "Tipo:", typeof id);
-      await deleteTask(id).unwrap();
-      console.log("Tarea eliminada exitosamente");
-      // Si la tarea que se está editando es la que se eliminó, cancelar edición
-      if (taskToEdit && taskToEdit.id === id) {
-        setTaskToEdit(null);
-      }
-    } catch (error) {
-      console.error("Error al eliminar tarea:", error);
+  const handleDelete = (id) => {
+    deleteTask(id);
+    if (taskToEdit && taskToEdit.id === id) {
+      setTaskToEdit(null);
     }
   };
 
@@ -30,36 +22,6 @@ export const Tasks = () => {
   const handleEditComplete = () => {
     setTaskToEdit(null);
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-linear-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-700 font-medium">
-            Cargando tareas...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    console.error("Error en getTasks:", error);
-    return (
-      <div className="min-h-screen bg-linear-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="bg-gray-900 rounded-lg shadow-xl p-8 max-w-md w-full">
-          <div className="text-red-500 text-5xl mb-4 text-center">⚠️</div>
-          <h2 className="text-2xl font-bold text-red-600 mb-2 text-center">
-            Error al cargar
-          </h2>
-          <p className="bg-red-500 text-center ">
-            {error.message || JSON.stringify(error)}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -97,6 +59,8 @@ export const Tasks = () => {
             <CrudForm
               taskToEdit={taskToEdit}
               onEditComplete={handleEditComplete}
+              onAdd={addTask}
+              onUpdate={updateTask}
             />
           </div>
         </div>
@@ -138,10 +102,9 @@ export const Tasks = () => {
                       </button>
                       <button
                         onClick={() => handleDelete(task.id)}
-                        disabled={isDeleting}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                       >
-                        {isDeleting ? "Eliminando..." : "Eliminar"}
+                        Eliminar
                       </button>
                     </div>
                   </div>

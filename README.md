@@ -1,6 +1,6 @@
 # Prueba Técnica — Pokédex + Gestor de Tareas
 
-Aplicación web desarrollada con **React 19 + Vite** que integra dos módulos principales: un explorador de Pokémon que consume la **PokéAPI** y un sistema de **gestión de tareas** (CRUD completo) respaldado por **JSON Server**.
+Aplicación web desarrollada con **React 19 + Vite** que integra dos módulos principales: un explorador de Pokémon que consume la **PokéAPI** y un sistema de **gestión de tareas** (CRUD completo) que persiste datos en el **localStorage** del navegador, sin necesidad de backend.
 
 ---
 
@@ -12,6 +12,7 @@ Aplicación web desarrollada con **React 19 + Vite** que integra dos módulos pr
 - [Instalación y uso](#instalación-y-uso)
 - [Scripts disponibles](#scripts-disponibles)
 - [Rutas de la aplicación](#rutas-de-la-aplicación)
+- [Deploy a producción](#deploy-a-producción)
 
 ---
 
@@ -27,9 +28,9 @@ Aplicación web desarrollada con **React 19 + Vite** que integra dos módulos pr
 ### ✅ Módulo Gestor de Tareas
 
 - **CRUD completo**: crear, leer, actualizar y eliminar tareas.
-- Backend simulado con **JSON Server** sobre `src/db/tasks.json`.
+- Las tareas se persisten en **localStorage**, sin necesidad de backend ni servidor externo.
 - Validación de formularios con **Zod** (longitud mínima y máxima por campo).
-- Feedback de carga y manejo de errores en cada operación asíncrona.
+- Datos disponibles inmediatamente al recargar la página.
 
 ---
 
@@ -42,8 +43,7 @@ Aplicación web desarrollada con **React 19 + Vite** que integra dos módulos pr
 | Routing             | React Router DOM v7                           |
 | Estilos             | Tailwind CSS v4, Bootstrap 5, React-Bootstrap |
 | Validación          | Zod                                           |
-| HTTP Client         | Axios                                         |
-| Mock Backend        | JSON Server                                   |
+| Persistencia        | localStorage (nativo del navegador)           |
 | Linting             | ESLint 9                                      |
 
 ---
@@ -53,24 +53,22 @@ Aplicación web desarrollada con **React 19 + Vite** que integra dos módulos pr
 ```
 src/
 ├── api/
-│   ├── slices.js         # RTK Query — endpoints PokéAPI
-│   └── sliceTask.js      # RTK Query — endpoints JSON Server (tareas)
+│   └── slices.js              # RTK Query — endpoints PokéAPI
 ├── components/
-│   ├── Products.jsx      # Listado de Pokémon con búsqueda y paginación
-│   ├── ProductsCard.jsx  # Tarjeta individual de Pokémon
-│   ├── PokemonDetail.jsx # Vista de detalle del Pokémon
-│   ├── Tasks.jsx         # Listado y gestión de tareas
-│   ├── CrudForm.jsx      # Formulario crear/editar tarea
-│   └── SearchBar.jsx     # Barra de búsqueda de Pokémon
+│   ├── Products.jsx          # Listado de Pokémon con búsqueda y paginación
+│   ├── ProductsCard.jsx      # Tarjeta individual de Pokémon
+│   ├── PokemonDetail.jsx     # Vista de detalle del Pokémon
+│   ├── Tasks.jsx             # Listado y gestión de tareas
+│   ├── CrudForm.jsx          # Formulario crear/editar tarea
+│   └── SearchBar.jsx         # Barra de búsqueda de Pokémon
 ├── hooks/
-│   ├── useFetch.js       # Hook genérico de fetching
-│   ├── useSearch.jsx     # Hook de búsqueda
-│   └── useZod.ts         # Hook de validación con Zod
+│   ├── useLocalStorageTasks.js # CRUD de tareas con localStorage
+│   ├── useFetch.js           # Hook genérico de fetching
+│   ├── useSearch.jsx         # Hook de búsqueda
+│   └── useZod.ts             # Hook de validación con Zod
 ├── store/
-│   └── store.js          # Configuración del store de Redux
-├── db/
-│   └── tasks.json        # Base de datos local para JSON Server
-└── App.jsx               # Definición de rutas principales
+│   └── store.js              # Store de Redux (solo para PokéAPI)
+└── App.jsx                   # Definición de rutas principales
 ```
 
 ---
@@ -92,14 +90,11 @@ cd prueba-tecnica
 # 2. Instalar dependencias
 npm install
 
-# 3. Iniciar el backend simulado (JSON Server — puerto 5000)
-npm run back
-
-# 4. En otra terminal, iniciar el servidor de desarrollo (puerto 5173)
+# 3. Iniciar el servidor de desarrollo (puerto 5173)
 npm run dev
 ```
 
-> **Importante:** el módulo de tareas requiere que JSON Server esté corriendo en `http://localhost:5000` antes de usar esa sección de la app.
+> El módulo de tareas funciona directamente sin ningún servidor adicional. Las tareas se guardan en el **localStorage** del navegador.
 
 ---
 
@@ -111,7 +106,6 @@ npm run dev
 | `npm run build`   | Genera el build de producción            |
 | `npm run preview` | Previsualiza el build de producción      |
 | `npm run lint`    | Ejecuta ESLint sobre el proyecto         |
-| `npm run back`    | Levanta JSON Server en el puerto 5000    |
 
 ---
 
@@ -122,6 +116,16 @@ npm run dev
 | `/`            | `Products`      | Listado de Pokémon con búsqueda y paginación |
 | `/pokemon/:id` | `PokemonDetail` | Detalle de un Pokémon específico             |
 | `/tasks`       | `Tasks`         | Gestor de tareas CRUD                        |
+
+---
+
+## Deploy a producción
+
+El frontend está desplegado en **Netlify**. Al no requerir backend, el deploy es un proceso de un solo paso:
+
+1. Conectar el repositorio de GitHub a Netlify.
+2. Build command: `npm run build` / Publish directory: `dist`.
+3. Listo — el gestor de tareas funciona completamente en el navegador gracias a localStorage.
 
 ---
 

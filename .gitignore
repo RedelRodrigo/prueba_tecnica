@@ -23,5 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Variables de entorno (contienen URLs privadas, NO subir)
+.env
+.env.local
+.env.production
+
 # Local Netlify folder
 .netlify

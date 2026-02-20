@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import Form from "react-bootstrap/Form";
 import { useZod } from "../hooks/useZod";
-import { useAddTaskMutation, useUpdateTaskMutation } from "../api/sliceTask";
 
-export const CrudForm = ({ taskToEdit, onEditComplete }) => {
+export const CrudForm = ({ taskToEdit, onEditComplete, onAdd, onUpdate }) => {
   const initialFormData = useMemo(() => {
     return taskToEdit
       ? {
@@ -22,10 +21,6 @@ export const CrudForm = ({ taskToEdit, onEditComplete }) => {
   const [successMessage, setSuccessMessage] = useState("");
 
   const { validate, validateField } = useZod();
-  const [addTask, { isLoading: isAdding }] = useAddTaskMutation();
-  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
-
-  const isLoading = isAdding || isUpdating;
   const isEditMode = !!taskToEdit;
 
   useEffect(() => {
@@ -47,7 +42,7 @@ export const CrudForm = ({ taskToEdit, onEditComplete }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setSuccessMessage("");
 
@@ -58,66 +53,21 @@ export const CrudForm = ({ taskToEdit, onEditComplete }) => {
       return;
     }
 
-    try {
-      if (isEditMode) {
-        // Modo edición
-        console.log("Actualizando tarea con ID:", taskToEdit.id);
-        console.log("Datos a enviar:", formData);
-        console.log("Tipo de ID:", typeof taskToEdit.id);
-
-        const result = await updateTask({
-          id: taskToEdit.id,
-          name: formData.name,
-          description: formData.description,
-        }).unwrap();
-        console.log("Tarea actualizada:", result);
-
-        setSuccessMessage("¡Tarea actualizada correctamente!");
-
-        // Limpiar formulario y salir del modo edición
-        setFormData({ name: "", description: "" });
-        setErrors({});
-
-        setTimeout(() => {
-          setSuccessMessage("");
-          if (onEditComplete) onEditComplete();
-        }, 1500);
-      } else {
-        // Modo agregar - generar ID progresivo
-        const response = await fetch("http://localhost:5000/Tasks");
-        const existingTasks = await response.json();
-
-        // Calcular el próximo ID basado en el ID máximo actual
-        const nextId =
-          existingTasks.length > 0
-            ? Math.max(...existingTasks.map((task) => Number(task.id))) + 1
-            : 1;
-
-        const newTask = {
-          id: nextId,
-          name: formData.name,
-          description: formData.description,
-        };
-
-        console.log("Creando nueva tarea con ID progresivo:", newTask);
-        const result = await addTask(newTask).unwrap();
-        console.log("Tarea creada:", result);
-
-        // Pequeño delay para asegurar que el servidor guarde correctamente
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        setSuccessMessage("¡Tarea agregada correctamente!");
-
-        setFormData({ name: "", description: "" });
-        setErrors({});
-
-        setTimeout(() => setSuccessMessage(""), 3000);
-      }
-    } catch (error) {
-      console.error("Error al procesar tarea:", error);
-      setErrors({
-        submit: `Error al ${isEditMode ? "actualizar" : "agregar"} la tarea`,
-      });
+    if (isEditMode) {
+      onUpdate({ id: taskToEdit.id, ...formData });
+      setSuccessMessage("¡Tarea actualizada correctamente!");
+      setFormData({ name: "", description: "" });
+      setErrors({});
+      setTimeout(() => {
+        setSuccessMessage("");
+        if (onEditComplete) onEditComplete();
+      }, 1500);
+    } else {
+      onAdd(formData);
+      setSuccessMessage("¡Tarea agregada correctamente!");
+      setFormData({ name: "", description: "" });
+      setErrors({});
+      setTimeout(() => setSuccessMessage(""), 3000);
     }
   };
 
@@ -177,16 +127,8 @@ export const CrudForm = ({ taskToEdit, onEditComplete }) => {
         )}
 
         <div className="flex w-full justify-center gap-3">
-          <button
-            type="submit"
-            className="bg-blue-500 text-white p-2 rounded disabled:bg-gray-400"
-            disabled={isLoading}
-          >
-            {isLoading
-              ? "Enviando..."
-              : isEditMode
-                ? "Actualizar Tarea"
-                : "Agregar Tarea"}
+          <button type="submit" className="bg-blue-500 text-white p-2 rounded">
+            {isEditMode ? "Actualizar Tarea" : "Agregar Tarea"}
           </button>
 
           <button
@@ -198,11 +140,6 @@ export const CrudForm = ({ taskToEdit, onEditComplete }) => {
           </button>
         </div>
       </Form>
-
-      <div className="mt-3 p-3 bg-gray-100 rounded text-black">
-        <strong>Objeto actual:</strong>
-        <pre>{JSON.stringify(formData, null, 2)}</pre>
-      </div>
     </div>
   );
 };
