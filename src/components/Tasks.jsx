@@ -77,11 +77,11 @@ export const Tasks = () => {
               No hay tareas registradas
             </p>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-gray-900"
+                  className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-gray-900 w-full"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
